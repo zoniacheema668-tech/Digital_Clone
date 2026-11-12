@@ -4,3 +4,4 @@ sentence-transformers
 numpy
 huggingface_hub
 python-dotenv
+openai
