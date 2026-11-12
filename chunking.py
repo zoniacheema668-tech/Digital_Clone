@@ -1,7 +1,7 @@
 
 from pathlib import Path
 
-DATA_FOLDER = Path("data")
+DATA_FOLDER = Path(".")
 
 CHUNK_SIZE = 250
 OVERLAP = 40
