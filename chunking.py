@@ -33,6 +33,8 @@ def load_documents():
     all_chunks = []
 
     for file_path in sorted(DATA_FOLDER.glob("*.md")):
+    if file_path.name == "README.md":
+        continue
         content = file_path.read_text(encoding="utf-8")
 
         document_chunks = create_chunks(content)
