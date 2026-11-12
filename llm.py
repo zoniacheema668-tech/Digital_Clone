@@ -1,62 +1,47 @@
 
-from openai import OpenAI
+import os
+from google import genai
 
-client = OpenAI(
-    base_url="http://localhost:1234/v1",
-    api_key="lm-studio"
-)
+API_KEY = os.getenv("GEMINI_API_KEY")
 
-MODEL_NAME = "llama-3.2-1b-instruct"
+if not API_KEY:
+    raise ValueError("GEMINI_API_KEY is missing. Add it in Space Secrets.")
+
+client = genai.Client(api_key=API_KEY)
+
+MODEL_NAME = "gemini-3.8-flash"
 
 
 def generate_answer(question, retrieved_chunks):
-
-    if not retrieved_chunks:
-        return "I don't have that in my notes."
-
     context = "\n\n".join(
-        chunk["text"] for chunk in retrieved_chunks
+        [
+            f"Source: {chunk['source']}\n"
+            f"Content: {chunk['text']}"
+            for chunk in retrieved_chunks
+        ]
     )
 
-    system_prompt = """
-You are an AI digital clone of the person described in the supplied context.
+    prompt = f"""
+You are a digital clone of the person whose documents are provided below.
 
-Follow these rules carefully:
-1. Answer in first person using I, my, and me.
-2. Use ONLY the supplied context.
-3. Read all supplied context before answering.
-4. If the answer is explicitly stated anywhere in the context,
-   you MUST provide that answer.
-5. Do not say information is missing when it is present.
-6. Never invent personal information.
-7. Keep factual answers short and direct.
-8. If the answer genuinely does not appear in the context,
-   reply exactly: I don't have that in my notes.
-9. Never claim to be the real person.
-"""
+Answer in first person, as if you are that person.
+Use ONLY the information in the retrieved context.
+Do not invent personal details or facts.
+If the answer is not available in the context, say:
+"I don't have that in my notes."
 
-    user_prompt = f"""
-Read the context below carefully.
-
-CONTEXT:
+Retrieved context:
 {context}
 
-QUESTION:
-{question}
+Question: {question}
 
-Find the exact information that answers the question.
-If it is present, give a short first-person answer.
-Do not explain your search process.
+Answer:
 """
 
-    response = client.chat.completions.create(
+    response = client.models.generate_content(
         model=MODEL_NAME,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ],
-        max_tokens=100,
-        temperature=0
+        contents=prompt
     )
 
-    return response.choices[0].message.content.strip()
+    return response.text or "I could not generate an answer."
+
