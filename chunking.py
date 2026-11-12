@@ -1,7 +1,7 @@
 
 from pathlib import Path
 
-DATA_FOLDER = Path(".")
+DATA_FOLDER = Path("data")
 
 CHUNK_SIZE = 250
 OVERLAP = 40
@@ -15,7 +15,6 @@ def create_chunks(text, chunk_size=CHUNK_SIZE, overlap=OVERLAP):
 
     while start < len(words):
         end = start + chunk_size
-
         chunk_words = words[start:end]
         chunk_text = " ".join(chunk_words)
 
@@ -33,10 +32,7 @@ def load_documents():
     all_chunks = []
 
     for file_path in sorted(DATA_FOLDER.glob("*.md")):
-    if file_path.name == "README.md":
-        continue
         content = file_path.read_text(encoding="utf-8")
-
         document_chunks = create_chunks(content)
 
         for index, chunk in enumerate(document_chunks):
@@ -72,3 +68,4 @@ if __name__ == "__main__":
         print("Chunk ID:", chunks[0]["chunk_id"])
         print("Word count:", len(chunks[0]["text"].split()))
         print("Preview:", chunks[0]["text"][:250])
+
